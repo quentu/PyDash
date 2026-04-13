@@ -4,13 +4,15 @@ set -e
 
 echo "Installing Server Agent..."
 
-# Install Python deps
-pip install --upgrade pip
-pip install fastapi uvicorn psutil
-
 # Create app directory
 mkdir -p ~/.server-agent
 cd ~/.server-agent
+python3 -m venv venv
+source venv/bin/activate
+
+# Install Python deps
+pip install --upgrade pip
+pip install fastapi uvicorn psutil
 
 # Download agent.py
 curl -sSL https://raw.githubusercontent.com/quentu/PyDash/main/agent/agent.py -o agent.py
