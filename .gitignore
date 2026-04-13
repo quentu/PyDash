@@ -1,2 +1,3 @@
 venv/
 config/servers_testing.yaml
+dashboard/config/servers_testing.yaml

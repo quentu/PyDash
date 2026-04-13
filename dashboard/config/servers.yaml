@@ -1,0 +1,6 @@
+servers:
+  - name: server-1
+    url: http://127.0.0.1:8000/stats
+
+  - name: server-2
+    url: http://127.0.0.1:8000/stats
