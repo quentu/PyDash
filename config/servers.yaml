@@ -1,0 +1,6 @@
+servers:
+  - name: myserver
+    host: xx.xx.xx.xx
+    user: admin
+    auth: password
+    password: password
