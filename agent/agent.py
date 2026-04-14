@@ -8,12 +8,16 @@ app = FastAPI()
 
 @app.get("/stats")
 def get_stats():
-    pynvml.nvmlInit()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-    
-    gpu_mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-    gpu_util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+    try:
+        pynvml.nvmlInit()
+        handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 
+        gpu_mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
+        gpu_util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+
+        gpu = gpu_util.gpu
+    except Exception:
+        gpu = 0
     return {
         "hostname": socket.gethostname(),
         "cpu": psutil.cpu_percent(),
