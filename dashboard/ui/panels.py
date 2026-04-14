@@ -21,19 +21,34 @@ def make_panel(name, data):
     hostname = data["hostname"]
     uptime   = data["uptime"]
     cpu      = data["cpu"]
-    gpu      = data["gpu"]
+    gpus     = data.get("gpus", [])
     mem      = data["memory"]
     disk     = data["disk"]
 
     hours   = uptime // 3600
     minutes = (uptime % 3600) // 60
+    
+    gpu_lines = ""
 
+    if gpus:
+        for gpu in gpus:
+            label = f"GPU{gpu['index']}"
+            name  = gpu["name"]
+            temp  = gpu["temp"]
+
+            gpu_lines += (
+                f"[bright_black]{label:<7}:[/]  {bar(gpu['util'])} "
+                f"[bright_black]{temp}°C[/] [bright_black]{name}[/]\n"
+            )
+    else:
+        gpu_lines = f"[bright_black]GPU     :[/]  {bar(0)}\n"
+    
     lines = Text.from_markup(
         f"[bright_black]UPTIME  :[/]  [white]{hours}h {minutes}m[/]\n"
         f"[bright_black]HOST    :[/]  [cyan bold]{hostname}[/]\n"
         f"\n"
         f"[bright_black]CPU     :[/]  {bar(cpu)}\n"
-        f"[bright_black]GPU     :[/]  {bar(gpu)}\n"
+        f"{gpu_lines}"
         f"[bright_black]MEM     :[/]  {bar(mem)}\n"
         f"[bright_black]DISK    :[/]  {bar(disk)}\n"
     )

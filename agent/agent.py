@@ -8,22 +8,48 @@ app = FastAPI()
 
 @app.get("/stats")
 def get_stats():
+    gpu = 0
+    gpu_mem_used = 0
+    gpu_mem_total = 0
+
     try:
-        pynvml.nvmlInit()
-        handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    pynvml.nvmlInit()
+    device_count = pynvml.nvmlDeviceGetCount()
 
-        gpu_mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        gpu_util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+    gpus = []
 
-        gpu = gpu_util.gpu
+    for i in range(device_count):
+        handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+
+        mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
+
+        samples = []
+        for _ in range(5):
+            util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+            samples.append(util.gpu)
+            time.sleep(0.05)
+
+        name = pynvml.nvmlDeviceGetName(handle).decode()
+        temp = pynvml.nvmlDeviceGetTemperature(
+            handle, pynvml.NVML_TEMPERATURE_GPU
+        )
+
+        gpus.append({
+            "index": i,
+            "name": name,
+            "util": sum(samples) / len(samples),
+            "temp": temp,
+            "mem_used": mem.used / 1024**2,
+            "mem_total": mem.total / 1024**2
+        })
+
     except Exception:
-        gpu = 0
+        gpus = []
+
     return {
         "hostname": socket.gethostname(),
         "cpu": psutil.cpu_percent(),
-        "gpu_mem_used": gpu_mem.used / 1024**2,
-        "gpu_mem_total": gpu_mem.total / 1024**2,
-        "gpu": gpu_util.gpu,
+        "gpus": gpus,
         "memory": psutil.virtual_memory().percent,
         "disk": psutil.disk_usage('/').percent,
         "uptime": int(time.time() - psutil.boot_time())
