@@ -17,10 +17,10 @@ def get_stats():
     return {
         "hostname": socket.gethostname(),
         "cpu": psutil.cpu_percent(),
-        "gpu_mem_used": gpu_mem.used / 1024**2
-        "gpu_mem_total": gpu_mem.total / 1024**2
-        "gpu": gpu_util.gpu
+        "gpu_mem_used": gpu_mem.used / 1024**2,
+        "gpu_mem_total": gpu_mem.total / 1024**2,
+        "gpu": gpu_util.gpu,
         "memory": psutil.virtual_memory().percent,
         "disk": psutil.disk_usage('/').percent,
         "uptime": int(time.time() - psutil.boot_time())
-    }
+        }
