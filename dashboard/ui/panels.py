@@ -33,12 +33,12 @@ def make_panel(name, data):
     if gpus:
         for gpu in gpus:
             label = f"GPU{gpu['index']}"
-            name  = gpu["name"]
+            gpu_name  = gpu["name"]
             temp  = gpu["temp"]
 
             gpu_lines += (
                 f"[bright_black]{label:<7}:[/]  {bar(gpu['util'])} "
-                f"[bright_black]{temp}°C[/] [bright_black]{name}[/]\n"
+                f"[bright_black]{temp}°C[/] [bright_black]{gpu_name}[/]\n"
             )
     else:
         gpu_lines = f"[bright_black]GPU     :[/]  {bar(0)}\n"
