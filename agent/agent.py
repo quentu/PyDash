@@ -29,7 +29,9 @@ def get_stats():
                 samples.append(util.gpu)
                 time.sleep(0.05)
 
-            name = pynvml.nvmlDeviceGetName(handle).decode()
+            name = pynvml.nvmlDeviceGetName(handle)
+            if isinstance(name, bytes):
+                name = name.decode()
             temp = pynvml.nvmlDeviceGetTemperature(
                 handle, pynvml.NVML_TEMPERATURE_GPU
             )
@@ -43,8 +45,11 @@ def get_stats():
                 "mem_total": mem.total / 1024**2
             })
 
-    except Exception:
-        gpus = []
+    except Exception as e:
+        return {
+            "error": str(e),
+            "hostname": socket.gethostname()
+        }
 
     return {
         "hostname": socket.gethostname(),
