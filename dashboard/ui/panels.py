@@ -37,11 +37,11 @@ def make_panel(name, data):
             temp  = gpu["temp"]
 
             gpu_lines += (
-                f"[bright_black]{label:<7}:[/]  {bar(gpu['util'])} "
+                f"[bright_black]{label:<7} :[/]  {bar(gpu['util'])} "
                 f"[bright_black]{temp}°C[/] [bright_black]{gpu_name}[/]\n"
             )
     else:
-        gpu_lines = f"[bright_black]GPU     :[/]  {bar(0)}\n"
+        gpu_lines = f"[bright_black]GPU     :[/]  UNAVAILABLE\n"
     
     lines = Text.from_markup(
         f"[bright_black]UPTIME  :[/]  [white]{hours}h {minutes}m[/]\n"
