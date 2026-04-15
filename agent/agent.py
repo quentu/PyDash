@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import psutil
 import pynvml
+import distro
 import socket
 import time
 
@@ -47,7 +48,7 @@ def get_stats():
                 "temp": temp,
                 "mem_used": mem.used / 1024**2,
                 "mem_total": mem.total / 1024**2
-            })
+                })
 
     except Exception as e:
         gpus = []
@@ -63,4 +64,7 @@ def get_stats():
         "memory": psutil.virtual_memory().percent,
         "disk": psutil.disk_usage('/').percent,
         "uptime": int(time.time() - psutil.boot_time())
+        "distro_name": distro.name(),
+        "distro_version": distro.version(),
+        "kernel": platform.release()
         }
