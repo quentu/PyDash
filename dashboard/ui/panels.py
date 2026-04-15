@@ -11,10 +11,12 @@ def bar(val, width=20):
     filled = int(val / 100 * width)
     empty = width - filled
     c = color(val)
-    return f"[{c}]{'▣' * filled}[/][bright_black]{'□' * empty}[/] [{c}]{val}%[/]"
+    return f"[{c}]{'■' * filled}[/][bright_black]{'■' * empty}[/] [{c}]{val}%[/]"
 
 
 def make_panel(name, data):
+    name = data ["hostname"]
+
     if "error" in data:
         return Panel(f"[red]{data['error']}[/red]", title=f"[red]{name}[/red]")
 
@@ -24,9 +26,10 @@ def make_panel(name, data):
     gpus     = data.get("gpus", [])
     mem      = data["memory"]
     disk     = data["disk"]
-
-    hours   = uptime // 3600
-    minutes = (uptime % 3600) // 60
+    
+    days    = uptime // 86400
+    hours   = (uptime % 86400) // 3600
+    minutes = ((uptime % 86400) % 3600) // 60
     
     gpu_lines = ""
 
@@ -44,7 +47,7 @@ def make_panel(name, data):
         gpu_lines = f"[bright_black]GPU     :[/]  UNAVAILABLE\n"
     
     lines = Text.from_markup(
-        f"[bright_black]UPTIME  :[/]  [white]{hours}h {minutes}m[/]\n"
+        f"[bright_black]UPTIME  :[/]  [white]{days}d {hours}h {minutes}m[/]\n"
         f"[bright_black]HOST    :[/]  [cyan bold]{hostname}[/]\n"
         f"\n"
         f"[bright_black]CPU     :[/]  {bar(cpu)}\n"
