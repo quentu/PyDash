@@ -7,12 +7,14 @@ cffi==2.0.0
 charset-normalizer==3.4.7
 click==8.3.2
 cryptography==46.0.7
+distro==1.9.0
 fastapi==0.135.3
 h11==0.16.0
 idna==3.11
 invoke==3.0.3
 markdown-it-py==4.0.0
 mdurl==0.1.2
+nvidia-ml-py==13.595.45
 paramiko==4.0.0
 psutil==7.2.2
 pycparser==3.0
@@ -28,3 +30,4 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.6.3
 uvicorn==0.44.0
+xmltodict==1.0.4
