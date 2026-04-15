@@ -12,7 +12,7 @@ source venv/bin/activate
 
 # Install Python deps
 pip install --upgrade pip
-pip install fastapi uvicorn psutil nvidia-ml-py
+pip install fastapi uvicorn psutil nvidia-ml-py distro
 
 # Download agent.py
 curl -sSL https://raw.githubusercontent.com/quentu/PyDash/main/agent/agent.py -o agent.py
