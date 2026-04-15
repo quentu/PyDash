@@ -5,6 +5,7 @@ import socket
 import time
 
 app = FastAPI()
+pynvml.nvmlInit()
 
 @app.get("/stats")
 def get_stats():
@@ -13,7 +14,6 @@ def get_stats():
     gpu_mem_total = 0
 
     try:
-        pynvml.nvmlInit()
         device_count = pynvml.nvmlDeviceGetCount()
 
         gpus = []
