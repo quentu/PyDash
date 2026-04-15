@@ -26,7 +26,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$HOME/.server-agent
-ExecStart=$(which uvicorn) agent:app --host 0.0.0.0 --port 8000
+ExecStart=$HOME/.server-agent/venv/bin/python -m uvicorn agent:app --host 0.0.0.0 --port 8000
 Restart=always
 
 [Install]
