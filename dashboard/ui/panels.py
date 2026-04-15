@@ -21,6 +21,9 @@ def make_panel(name, data):
         return Panel(f"[red]{data['error']}[/red]", title=f"[red]{name}[/red]")
 
     hostname = data["hostname"]
+    distro_name = data.get("distro_name","Unknown")
+    distro_version = data.get("distro_version", "Unknown")
+    kernel   = data.get("kernel", "Unknown")
     uptime   = data["uptime"]
     cpu      = data["cpu"]
     gpus     = data.get("gpus", [])
@@ -49,7 +52,8 @@ def make_panel(name, data):
     lines = Text.from_markup(
         f"[bright_black]UPTIME  :[/]  [white]{days}d {hours}h {minutes}m[/]\n"
         f"[bright_black]HOST    :[/]  [cyan bold]{hostname}[/]\n"
-        f"\n"
+        f"[bright_black]OS      :[/]  [cyan bold]{distro_name} {distro_version}[/]\n"
+        f"[bright_black]KERNEL  :[/]  [cyan bold]{kernel}[/]\n"
         f"[bright_black]CPU     :[/]  {bar(cpu)}\n"
         f"{gpu_lines}"
         f"[bright_black]MEM     :[/]  {bar(mem)}\n"
