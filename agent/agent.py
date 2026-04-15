@@ -5,7 +5,11 @@ import socket
 import time
 
 app = FastAPI()
-pynvml.nvmlInit()
+
+try:
+    pynvml.nvmlInit()
+except:
+    pass
 
 @app.get("/stats")
 def get_stats():
@@ -46,11 +50,12 @@ def get_stats():
             })
 
     except Exception as e:
-        return {
-            "error": str(e),
-            "hostname": socket.gethostname()
-        }
-
+        gpus = []
+        #return {
+        #    "error": str(e),
+        #    "hostname": socket.gethostname()
+        #}
+    
     return {
         "hostname": socket.gethostname(),
         "cpu": psutil.cpu_percent(),
