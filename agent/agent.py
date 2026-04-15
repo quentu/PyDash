@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import psutil
 import pynvml
 import distro
+import platform
 import socket
 import time
 
@@ -63,7 +64,7 @@ def get_stats():
         "gpus": gpus,
         "memory": psutil.virtual_memory().percent,
         "disk": psutil.disk_usage('/').percent,
-        "uptime": int(time.time() - psutil.boot_time())
+        "uptime": int(time.time() - psutil.boot_time()),
         "distro_name": distro.name(),
         "distro_version": distro.version(),
         "kernel": platform.release()
