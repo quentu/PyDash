@@ -38,7 +38,10 @@ def make_panel(name, data):
 
     if gpus:
         for gpu in gpus:
-            label = f"GPU{gpu['index']}"
+            if gpu['index'] > 0:
+                label = f"GPU{gpu['index']}"
+            else:
+                label = f"GPU"
             gpu_name  = gpu["name"]
             temp  = gpu["temp"]
 
@@ -47,7 +50,8 @@ def make_panel(name, data):
                 f"[bright_black]{temp}°C[/] [bright_black]{gpu_name}[/]\n"
             )
     else:
-        gpu_lines = f"[bright_black]GPU     :[/]  UNAVAILABLE\n"
+        gpu_lines = ""
+    #    gpu_lines = f"[bright_black]GPU     :[/]  NOT INSTALLED\n"
     
     lines = Text.from_markup(
         f"[bright_black]UPTIME  :[/]  [white]{days}d {hours}h {minutes}m[/]\n"
