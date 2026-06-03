@@ -62,8 +62,17 @@ def get_stats():
         "hostname": socket.gethostname(),
         "cpu": psutil.cpu_percent(),
         "gpus": gpus,
-        "memory": psutil.virtual_memory().percent,
+
+        "mem_total": psutil.virtual_memory().total,
+        "mem_available": psutil.virtual_memory().available,
+        "mem_free": psutil.virtual_memory().free,
+        "mem_used": psutil.virtual_memory().used,
+        "mem_cached": psutil.virtual_memory().cached,
+
         "disk": psutil.disk_usage('/').percent,
+        "disk_total": psutil.disk_usage('/').total,
+        "disk_free": psutil.disk_usage('/').free,
+        "disk_used": psutil.disk_usage('/').used,
         "uptime": int(time.time() - psutil.boot_time()),
         "distro_name": distro.name(),
         "distro_version": distro.version(),
