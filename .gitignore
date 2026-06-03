@@ -3,7 +3,12 @@ config/servers_testing.yaml
 dashboard/config/servers_testing.yaml
 structure.txt
 
-__pycache__/
+dashboard/core/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+dashboard/ui/__pycache__/
 *.pyc
 *.pyo
 *.pyd
