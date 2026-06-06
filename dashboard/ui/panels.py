@@ -5,40 +5,23 @@ from rich.layout import Layout
 from rich.columns import Columns
 
 def percentify(numerator, denominator):
-    res = (round((numerator / denominator), 2) * 100)
+    res = int((round((numerator / denominator), 2) * 100))
     return res
 def gib(val):
     res = round((val / (1.074 * 10**9)), 2)
     return res
 
-def color(val):
-    return "green" if val < 50 else "yellow" if val < 80 else "red"
+def color(val, invert=False):
+    if invert == False:
+        return "green" if val < 50 else "yellow" if val < 70 else "red"
+    elif invert == True:
+        return "red" if val < 50 else "yellow" if val < 70 else "green"
 
-
-def bar(val, width=20):
+def bar(val, width=20, invert=False):
     filled = int(val / 100 * width)
     empty = width - filled
-    c = color(val)
+    c = color(val, invert)
     return f"[{c}]{'■' * filled}[/][bright_black]{'■' * empty}[/] [{c}]{val}%[/]"
-
-def make_disk_panel(disk, disk_total, disk_free, disk_used):
-
-    total = f"[bright_white bold] TOTAL: {gib(disk_total)} GiB"
-    used = sub_panel(f"[bright_white]{bar(percentify(disk_used, disk_total))}",f"USED ─ {gib(disk_used)} GiB")
-    free = sub_panel(f"[bright_white]{bar(percentify(disk_free,disk_total))}",f"FREE ─ {gib(disk_free)} GiB")
-
-    content = Group(
-        total,
-        used,
-        free,
-    )
-
-    return Panel(
-        content,
-        title="[cyan bold]DISK[/]",
-        border_style="bright_black",
-        padding=(0, 0, 0, 0),
-    )
 
 def sub_panel(data, var_title1, var_title2=None, graph=None):
     if graph is None:   
@@ -57,13 +40,31 @@ def sub_panel(data, var_title1, var_title2=None, graph=None):
                 )
     return panel
 
+def make_disk_panel(disk, disk_total, disk_free, disk_used):
+
+    total = f"[bright_white bold] TOTAL: {gib(disk_total)} GiB"
+    used = sub_panel(f"[bright_white]{bar(percentify(disk_used, disk_total))}",f"USED ─ {gib(disk_used)} GiB")
+    free = sub_panel(f"[bright_white]{bar(percentify(disk_free, disk_total), 20, True)}",f"FREE ─ {gib(disk_free)} GiB")
+
+    content = Group(
+        total,
+        used,
+        free,
+    )
+
+    return Panel(
+        content,
+        title="[cyan bold]DISK[/]",
+        border_style="bright_black",
+        padding=(0, 0, 0, 0),
+    )
 def make_mem_panel(mem_total, mem_available, mem_free, mem_used, mem_cached):
     
     total = f"[bright_white bold] TOTAL: {gib(mem_total)} GiB"
     used = sub_panel(f"[bright_white]{bar(percentify(mem_used, mem_total))}",f"USED ─ {gib(mem_used)} GiB")
-    available = sub_panel(f"[bright_white]{bar(percentify(mem_available, mem_total))}",f"AVAILABLE ─ {gib(mem_available)} GiB")
+    available = sub_panel(f"[bright_white]{bar(percentify(mem_available, mem_total), 20, True)}",f"AVAILABLE ─ {gib(mem_available)} GiB")
     cached = sub_panel(f"[bright_white]{bar(percentify(gib(mem_cached),gib(mem_total)))}",f"CACHED ─ {gib(mem_cached)} GiB")
-    free = sub_panel(f"[bright_white]{bar(percentify(gib(mem_free),gib(mem_total)))}",f"FREE ─ {gib(mem_free)} GiB")
+    free = sub_panel(f"[bright_white]{bar(percentify(gib(mem_free),gib(mem_total)), 20, True)}",f"FREE ─ {gib(mem_free)} GiB")
 
     content = Group(
         total,
@@ -76,6 +77,42 @@ def make_mem_panel(mem_total, mem_available, mem_free, mem_used, mem_cached):
     return Panel(
         content,
         title="[cyan bold]MEMORY[/]",
+        border_style="bright_black",
+        padding=(0, 0, 0, 0),
+    )
+def make_gpu_panel(gpu_data):
+    if not gpu_data:
+        return ""
+ 
+    gpu_title = "[cyan bold]GPUS[/]" if len(gpu_data) > 1 else "[cyan bold]GPU[/]"
+    sub_panels = []
+ 
+    for gpu in gpu_data:
+        label = f"GPU{gpu['index']}" if gpu['index'] > 0 else "GPU"
+        gpu_name = gpu["name"]
+        temp = gpu["temp"]
+        util = gpu["util"]
+ 
+        util_bar = sub_panel(
+            f"[bright_white]{bar(util, 20)}",
+            f"UTIL ─ {label}",
+        )
+        temp_bar = sub_panel(
+            f"[bright_white]{bar(temp, 20)}",
+            f"TEMP ─ {temp}°C",
+        )
+        gpu_group = Group(
+            f"[bright_black]{gpu_name}[/]",
+            util_bar,
+            temp_bar,
+        )
+        sub_panels.append(gpu_group)
+ 
+    content = Group(*sub_panels)
+ 
+    return Panel(
+        content,
+        title=gpu_title,
         border_style="bright_black",
         padding=(0, 0, 0, 0),
     )
@@ -98,7 +135,8 @@ def make_panel(name, data):
     mem_free = data["mem_free"]
     mem_used = data["mem_used"]
     mem_cached = data["mem_cached"]
-    disk     = data["disk"]
+    
+    disk = data["disk"]
     disk_total = data["disk_total"]
     disk_free = data["disk_free"]
     disk_used = data["disk_used"]
@@ -138,6 +176,7 @@ def make_panel(name, data):
     split1 = Columns([
         make_disk_panel(disk, disk_total, disk_free, disk_used),
         make_mem_panel(mem_total, mem_available, mem_free, mem_used, mem_cached),
+        make_gpu_panel(gpus),
     ], equal=False, expand=True)
     
     content = Group(
