@@ -21,7 +21,7 @@ def bar(val, width=20, invert=False):
     filled = int(val / 100 * width)
     empty = width - filled
     c = color(val, invert)
-    return f"[{c}]{'■' * filled}[/][bright_black]{'■' * empty}[/] [{c}]{val}%[/]"
+    return f"[{c}]{'▒' * filled}[/][bright_black]{'░' * empty}[/] [{c}]{val}%[/]"
 
 def sub_panel(data, var_title1, var_title2=None, graph=None):
     if graph is None:   
@@ -95,14 +95,14 @@ def make_gpu_panel(gpu_data):
  
         util_bar = sub_panel(
             f"[bright_white]{bar(util, 20)}",
-            f"UTIL ─ {label}",
+            f"UTIL",
         )
         temp_bar = sub_panel(
             f"[bright_white]{bar(temp, 20)}",
             f"TEMP ─ {temp}°C",
         )
         gpu_group = Group(
-            f"[bright_black]{gpu_name}[/]",
+            f"[bold] {gpu_name}[/]",
             util_bar,
             temp_bar,
         )
@@ -119,7 +119,6 @@ def make_gpu_panel(gpu_data):
 
 def make_panel(name, data):
     name = data ["hostname"]
-
     if "error" in data:
         return Panel(f"[red]{data['error']}[/red]", title=f"[red]{name}[/red]")
 
@@ -145,42 +144,23 @@ def make_panel(name, data):
     hours   = (uptime % 86400) // 3600
     minutes = ((uptime % 86400) % 3600) // 60
     
-    gpu_lines = ""
-
-    if gpus:
-        for gpu in gpus:
-            if gpu['index'] > 0:
-                label = f"GPU{gpu['index']}"
-            else:
-                label = f"GPU"
-            gpu_name  = gpu["name"]
-            temp  = gpu["temp"]
-
-            gpu_lines += (
-                f"[bright_black]{label:<7} :[/]  {bar(gpu['util'],20)} "
-                f"[bright_black]{temp}°C[/] [bright_black]{gpu_name}[/]\n"
-            )
-    else:
-        gpu_lines = ""
-    #    gpu_lines = f"[bright_black]GPU     :[/]  NOT INSTALLED\n"
-    
     lines = Text.from_markup(
         f"[bright_black]UPTIME  :[/]  [white]{days}d {hours}h {minutes}m[/]\n"
         f"[bright_black]HOST    :[/]  [cyan bold]{hostname}[/]\n"
         f"[bright_black]OS      :[/]  [cyan bold]{distro_name} {distro_version}[/]\n"
         f"[bright_black]KERNEL  :[/]  [cyan bold]{kernel}[/]\n"
-        f"{gpu_lines}"
     )
     
     #split1 = Layout()
     split1 = Columns([
         make_disk_panel(disk, disk_total, disk_free, disk_used),
-        make_mem_panel(mem_total, mem_available, mem_free, mem_used, mem_cached),
         make_gpu_panel(gpus),
+        make_mem_panel(mem_total, mem_available, mem_free, mem_used, mem_cached),
+        #make_gpu_panel(gpus),
     ], equal=False, expand=True)
     
     content = Group(
-        lines,
+        #lines,
         split1,
     )
 
@@ -190,3 +170,4 @@ def make_panel(name, data):
         border_style="bright_black",
         padding=(0, 1, 0, 0),
         )
+     
