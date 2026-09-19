@@ -1,80 +1,103 @@
 from fastapi import FastAPI
 import psutil
-import pynvml
 import distro
 import platform
 import socket
 import time
-
-app = FastAPI()
+import os
+from contextlib import asynccontextmanager
+from threading import Event, Lock, Thread
 
 try:
-    pynvml.nvmlInit()
-except:
-    pass
+    import pynvml
+except ImportError:
+    pynvml = None;
+
+_lock = Lock()
+_snapshot = None
+
+def gpu_stats():
+    if pynvml is None:
+        return []
+    gpus = []
+    try:
+        count = pynvml.nvmlDeviceGetCount()
+    except Exception:
+        return []
+    for index in range(count):
+        try:
+            handle = pynvml.nvmlDeviceGetHandleByIndex(index)
+            memory = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            name = pynvml.nvmlDeviceGetName(handle)
+            gpus.append({"index": index, "name": name.decode() if isinstance(name, bytes) else name,
+                         "util": pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                         "temp": pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU),
+                         "mem_used": memory.used / 1024**2, "mem_total": memory.total / 1024**2})
+        except Exception:
+            continue
+    return gpus
+
+
+def collect_stats(cpu):
+    memory, disk = psutil.virtual_memory(), psutil.disk_usage("/")
+    network = psutil.net_io_counters()
+    return {"hostname": socket.gethostname(), "cpu": cpu, "gpus": gpu_stats(),
+            "mem_total": memory.total, "mem_available": memory.available,
+            "mem_free": memory.free, "mem_used": memory.used,
+            "mem_cached": getattr(memory, "cached", 0),
+            "disk": disk.percent, "disk_total": disk.total,
+            "disk_free": disk.free, "disk_used": disk.used,
+            "uptime": int(time.time() - psutil.boot_time()), "boot_time": psutil.boot_time(),
+            "load": list(os.getloadavg()) if hasattr(os, "getloadavg") else None,
+            "network": {"bytes_recv": network.bytes_recv, "bytes_sent": network.bytes_sent} if network else None,
+            "distro_name": distro.name(), "distro_version": distro.version(), "kernel": platform.release()}
+
+
+def sample(stop):
+    global _snapshot
+    psutil.cpu_percent(None)  # discard the first, meaningless CPU sample
+    while not stop.wait(1):
+        try:
+            snapshot = collect_stats(psutil.cpu_percent(None))
+            with _lock:
+                _snapshot = (time.monotonic(), snapshot)
+        except (OSError, RuntimeError):
+            # A stuck/failed sampler must not serve healthy-looking old data.
+            continue
+
+
+@asynccontextmanager
+async def lifespan(app):
+    global _snapshot
+    _snapshot = None
+    if pynvml is not None:
+        try:
+            pynvml.nvmlInit()
+        except Exception:
+            pass
+    stop = Event()
+    worker = Thread(target=sample, args=(stop,), daemon=True)
+    worker.start()
+    try:
+        yield
+    finally:
+        stop.set()
+        worker.join(timeout=2)
+        if pynvml is not None:
+            try:
+                pynvml.nvmlShutdown()
+            except Exception:
+                pass
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/stats")
 def get_stats():
-    gpu = 0
-    gpu_mem_used = 0
-    gpu_mem_total = 0
-
-    try:
-        device_count = pynvml.nvmlDeviceGetCount()
-
-        gpus = []
-
-        for i in range(device_count):
-            handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-
-            mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-
-            samples = []
-            for _ in range(5):
-                util = pynvml.nvmlDeviceGetUtilizationRates(handle)
-                samples.append(util.gpu)
-                time.sleep(0.05)
-
-            name = pynvml.nvmlDeviceGetName(handle)
-            if isinstance(name, bytes):
-                name = name.decode()
-            temp = pynvml.nvmlDeviceGetTemperature(
-                handle, pynvml.NVML_TEMPERATURE_GPU
-            )
-
-            gpus.append({
-                "index": i,
-                "name": name,
-                "util": sum(samples) / len(samples),
-                "temp": temp,
-                "mem_used": mem.used / 1024**2,
-                "mem_total": mem.total / 1024**2
-                })
-
-    except Exception as e:
-        gpus = []
-        #return {
-        #    "error": str(e),
-        #    "hostname": socket.gethostname()
-        #}
-    
-    return {
-        "hostname": socket.gethostname(),
-        "cpu": psutil.cpu_percent(),
-        "gpus": gpus,
-
-        "mem_total": psutil.virtual_memory().total,
-        "mem_available": psutil.virtual_memory().available,
-        "mem_free": psutil.virtual_memory().free,
-        "mem_used": psutil.virtual_memory().used,
-        "mem_cached": psutil.virtual_memory().cached,
-
-        "disk": psutil.disk_usage('/').percent,
-        "disk_total": psutil.disk_usage('/').total,
-        "disk_free": psutil.disk_usage('/').free,
-        "disk_used": psutil.disk_usage('/').used,
-        "uptime": int(time.time() - psutil.boot_time()),
-        "distro_name": distro.name(),
-        "distro_version": distro.version(),
-        "kernel": platform.release()
-        }
+    from fastapi.responses import JSONResponse
+    with _lock:
+        snapshot = _snapshot
+    if snapshot is None or time.monotonic() - snapshot[0] > 5:
+        return JSONResponse({"error": "Metrics sampler warming up or unavailable"}, status_code=503)
+    return snapshot[1]
