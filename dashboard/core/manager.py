@@ -1,8 +1,3 @@
-"""Non-blocking coordinator. At most one worker per configured host.
-
-Workers never mutate visible state. Late results are discarded; daemon workers
-allow Ctrl+C even if a resolver or socket is stuck beyond its native timeout.
-"""
 from collections import deque
 from queue import Queue, Empty
 from threading import Thread
