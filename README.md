@@ -1,4 +1,4 @@
-### WARNING: THIS PROJECT IS WIP, DO NOT INSTALL ON YOUR SYSTEM UNTIL OTHERWISE STATED (or do, what do I care :p)
+### This project is now in a functional state. README.md will be updated soon
 
 ### Installing Agent
 This is required for the API to pull stats from the machine.
