@@ -1,4 +1,3 @@
-"""Configuration, wire-independent metrics, and bounded dashboard state."""
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
