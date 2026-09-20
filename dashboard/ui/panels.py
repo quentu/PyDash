@@ -2,6 +2,7 @@ from rich.panel import Panel
 from rich.console import Group
 from rich.text import Text
 from rich.layout import Layout
+from rich.table import Table
 from rich.columns import Columns
 from rich import box
 import time
