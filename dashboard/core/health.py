@@ -1,4 +1,3 @@
-"""Normalize old and new agents; never treat missing metrics as zero."""
 import math
 from dashboard.core.models import ServerMetrics, ServerStatus
 
