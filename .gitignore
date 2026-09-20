@@ -1,6 +1,5 @@
 venv/
 config/servers_testing.yaml
-dashboard/config/servers_testing.yaml
 structure.txt
 
 dashboard/core/__pycache__/
