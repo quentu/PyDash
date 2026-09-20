@@ -12,9 +12,16 @@ CONFIG_DIR = Path(
 DEFAULT_CONFIG = CONFIG_DIR / "servers.yaml"
 
 def ensure_config_dir():
+    if DEFAULT_CONFIG.exists():
+        return
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(BUNDLED_CONFIG, DEFAULT_CONFIG)
 
 def load_config(path=DEFAULT_CONFIG):
+    path = Path(path)
+
+    if path == DEFAULT_CONFIG:
+        ensure_default_config()
     try:
         document = yaml.safe_load(Path(path).read_text())
     except (OSError, yaml.YAMLError) as exc:
