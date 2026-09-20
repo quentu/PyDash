@@ -1,4 +1,5 @@
 import os
+import shutil
 import yaml
 from pathlib import Path
 import math
@@ -11,7 +12,9 @@ CONFIG_DIR = Path(
 
 DEFAULT_CONFIG = CONFIG_DIR / "servers.yaml"
 
-def ensure_config_dir():
+BUNDLED_CONFIG = Path(__file__).resolve().parents[1] / "config" / "servers.yaml"
+
+def ensure_default_config():
     if DEFAULT_CONFIG.exists():
         return
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -23,7 +26,7 @@ def load_config(path=DEFAULT_CONFIG):
     if path == DEFAULT_CONFIG:
         ensure_default_config()
     try:
-        document = yaml.safe_load(Path(path).read_text())
+        document = yaml.safe_load(path.read_text())
     except (OSError, yaml.YAMLError) as exc:
         raise ValueError(f"Cannot load {path}: {exc}") from exc
     if not isinstance(document, dict) or not isinstance(document.get("servers"), list):
