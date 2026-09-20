@@ -1,11 +1,18 @@
+import os
 import yaml
 from pathlib import Path
 import math
 from urllib.parse import urlsplit
 from dashboard.core.models import ServerConfig, ServiceCheck, Settings
 
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "config" / "servers.yaml"
+CONFIG_DIR = Path(
+    os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+) / "pydash"
 
+DEFAULT_CONFIG = CONFIG_DIR / "servers.yaml"
+
+def ensure_config_dir():
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_config(path=DEFAULT_CONFIG):
     try:
