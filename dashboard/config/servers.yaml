@@ -1,6 +1,11 @@
 servers:
-  - name: server-1
-    url: http://127.0.0.1:8000/stats
+  # Add each server you want PyDash to monitor.
+  #
+  # name: Display name shown in the PyDash dashboard.
+  # url:  URL of the PyDash agent running on that server.
+  #       The agent must be installed and running before adding the server.
+  - name: your-server-1
+    url: 192.168.1.100:8000/stats
 
-  - name: server-2
-    url: http://127.0.0.1:8000/stats
+  - name: your-server-2
+    url: 192.168.1.101:8000/stats
