@@ -5,6 +5,8 @@ import time
 from urllib.parse import urlsplit
 from dashboard.core.models import PollResult, ServerStatus
 
+MAX_PAYLOAD = 1024 * 1024
+
 def fetch(server, timeout=1.5):
     deadline = time.monotonic() + timeout
     try:
