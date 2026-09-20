@@ -1,4 +1,3 @@
-"""Explicit, deterministic synthetic mode; never used by live monitoring."""
 import math
 import time
 from dashboard.core.manager import Monitor
